@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,120 +6,73 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, SlidersHorizontal } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import ProductCard from './ProductCard';
+import { productsAPI, categoriesAPI } from '@/services/api';
 
-// Mock products data - replace with your MySQL data
-const mockProducts = [
-  {
-    id: '1',
-    name: 'Premium Wireless Headphones',
-    price: 299,
-    originalPrice: 399,
-    image: '/src/assets/hero-headphones.jpg',
-    rating: 4.8,
-    reviews: 156,
-    category: 'Audio',
-    isNew: true,
-  },
-  {
-    id: '2',
-    name: 'Mechanical Gaming Keyboard',
-    price: 149,
-    originalPrice: 199,
-    image: '/src/assets/product-keyboard.jpg',
-    rating: 4.6,
-    reviews: 89,
-    category: 'Gaming',
-    isNew: false,
-  },
-  {
-    id: '3',
-    name: 'Ultrabook Laptop Pro',
-    price: 1299,
-    image: '/src/assets/product-laptop.jpg',
-    rating: 4.9,
-    reviews: 234,
-    category: 'Computing',
-    isNew: true,
-  },
-  {
-    id: '4',
-    name: 'Smart Fitness Watch',
-    price: 249,
-    originalPrice: 299,
-    image: '/src/assets/product-watch.jpg',
-    rating: 4.5,
-    reviews: 178,
-    category: 'Wearables',
-    isNew: false,
-  },
-];
-
-const categories = ['All', 'Audio', 'Gaming', 'Computing', 'Wearables'];
 const sortOptions = [
-  { value: 'relevance', label: 'Relevance' },
-  { value: 'price-low', label: 'Price: Low to High' },
-  { value: 'price-high', label: 'Price: High to Low' },
+  { value: 'created_at', label: 'Newest' },
+  { value: 'name', label: 'Name' },
+  { value: 'price', label: 'Price: Low to High' },
   { value: 'rating', label: 'Rating' },
-  { value: 'newest', label: 'Newest' },
 ];
 
 const ProductSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('relevance');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('DESC');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showNewOnly, setShowNewOnly] = useState(false);
+  
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([{ name: 'All' }]);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
 
-  const filteredProducts = useMemo(() => {
-    let filtered = [...mockProducts];
+  // Load categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await categoriesAPI.getAll();
+        setCategories([{ name: 'All' }, ...data]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
 
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+    fetchCategories();
+  }, []);
 
-    // Category filter
-    if (selectedCategory !== 'All') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
+  // Fetch products when filters change
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        
+        const filters: any = {};
+        if (searchQuery) filters.search = searchQuery;
+        if (selectedCategory !== 'All') filters.category = selectedCategory;
+        if (priceRange.min) filters.minPrice = priceRange.min;
+        if (priceRange.max) filters.maxPrice = priceRange.max;
+        if (showNewOnly) filters.isNew = 'true';
+        if (sortBy) {
+          filters.sortBy = sortBy;
+          filters.sortOrder = sortBy === 'price' ? 'ASC' : sortOrder;
+        }
 
-    // Price range filter
-    if (priceRange.min) {
-      filtered = filtered.filter(product => product.price >= Number(priceRange.min));
-    }
-    if (priceRange.max) {
-      filtered = filtered.filter(product => product.price <= Number(priceRange.max));
-    }
+        const data = await productsAPI.getAll(filters);
+        setProducts(data.products || []);
+        setTotal(data.pagination?.total || 0);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // New products filter
-    if (showNewOnly) {
-      filtered = filtered.filter(product => product.isNew);
-    }
-
-    // Sorting
-    switch (sortBy) {
-      case 'price-low':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
-        break;
-      default:
-        // Keep relevance order
-        break;
-    }
-
-    return filtered;
-  }, [searchQuery, selectedCategory, sortBy, priceRange, showNewOnly]);
+    // Debounce the API call
+    const timeoutId = setTimeout(fetchProducts, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, selectedCategory, sortBy, sortOrder, priceRange, showNewOnly]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -225,15 +178,15 @@ const ProductSearch = () => {
             <div className="space-y-2">
               {categories.map((category) => (
                 <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  key={category.name}
+                  onClick={() => setSelectedCategory(category.name)}
                   className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                    selectedCategory === category
+                    selectedCategory === category.name
                       ? 'bg-accent text-accent-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                   }`}
                 >
-                  {category}
+                  {category.name}
                 </button>
               ))}
             </div>
@@ -278,11 +231,21 @@ const ProductSearch = () => {
         <div className="flex-1">
           <div className="flex items-center justify-between mb-6">
             <p className="text-muted-foreground">
-              {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
+              {total} product{total !== 1 ? 's' : ''} found
             </p>
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {loading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-card rounded-lg p-4 animate-pulse">
+                  <div className="w-full h-48 bg-muted rounded mb-4"></div>
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-4 bg-muted rounded w-2/3"></div>
+                </div>
+              ))}
+            </div>
+          ) : products.length === 0 ? (
             <div className="text-center py-12">
               <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-muted-foreground mb-2">No products found</h3>
@@ -290,7 +253,7 @@ const ProductSearch = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
+              {products.map((product) => (
                 <ProductCard key={product.id} {...product} />
               ))}
             </div>
@@ -318,15 +281,15 @@ const MobileFilters = ({
       <div className="space-y-2">
         {categories.map((category) => (
           <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
+            key={category.name}
+            onClick={() => setSelectedCategory(category.name)}
             className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-              selectedCategory === category
+              selectedCategory === category.name
                 ? 'bg-accent text-accent-foreground'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
             }`}
           >
-            {category}
+            {category.name}
           </button>
         ))}
       </div>

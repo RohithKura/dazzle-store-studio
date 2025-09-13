@@ -11,7 +11,7 @@ interface CartProps {
 }
 
 const Cart = ({ trigger }: CartProps) => {
-  const { items, updateQuantity, removeItem, clearCart, getTotalPrice, getTotalItems } = useCart();
+  const { items, updateQuantity, removeItem, clearCart, getTotalPrice, getTotalItems, loading } = useCart();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -68,49 +68,52 @@ const Cart = ({ trigger }: CartProps) => {
               </div>
             ) : (
               items.map((item) => (
-                <div key={item.id} className="flex items-center space-x-4 p-4 bg-card rounded-lg border">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded-md bg-gradient-card"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm text-card-foreground truncate">
-                      {item.name}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">{item.category}</p>
-                    <p className="font-semibold text-foreground">${item.price}</p>
-                  </div>
-                  <div className="flex flex-col items-end space-y-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeItem(item.id)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                    <div className="flex items-center border border-input rounded">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      >
-                        <Minus className="w-3 h-3" />
-                      </Button>
-                      <span className="px-2 text-sm min-w-[2rem] text-center">{item.quantity}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      >
-                        <Plus className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                 <div key={item.product_id} className="flex items-center space-x-4 p-4 bg-card rounded-lg border">
+                   <img
+                     src={item.image_url}
+                     alt={item.name}
+                     className="w-16 h-16 object-cover rounded-md bg-gradient-card"
+                   />
+                   <div className="flex-1 min-w-0">
+                     <h4 className="font-medium text-sm text-card-foreground truncate">
+                       {item.name}
+                     </h4>
+                     <p className="text-xs text-muted-foreground">{item.category_name}</p>
+                     <p className="font-semibold text-foreground">${item.price}</p>
+                   </div>
+                   <div className="flex flex-col items-end space-y-2">
+                     <Button
+                       variant="ghost"
+                       size="icon"
+                       className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                       onClick={() => removeItem(item.product_id)}
+                       disabled={loading}
+                     >
+                       <X className="w-4 h-4" />
+                     </Button>
+                     <div className="flex items-center border border-input rounded">
+                       <Button
+                         variant="ghost"
+                         size="icon"
+                         className="h-8 w-8"
+                         onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
+                         disabled={loading}
+                       >
+                         <Minus className="w-3 h-3" />
+                       </Button>
+                       <span className="px-2 text-sm min-w-[2rem] text-center">{item.quantity}</span>
+                       <Button
+                         variant="ghost"
+                         size="icon"
+                         className="h-8 w-8"
+                         onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
+                         disabled={loading}
+                       >
+                         <Plus className="w-3 h-3" />
+                       </Button>
+                     </div>
+                   </div>
+                 </div>
               ))
             )}
           </div>

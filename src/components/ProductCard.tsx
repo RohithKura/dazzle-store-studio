@@ -10,37 +10,33 @@ interface ProductCardProps {
   id: string;
   name: string;
   price: number;
-  originalPrice?: number;
-  image: string;
+  original_price?: number;
+  image_url: string;
   rating: number;
-  reviews: number;
-  category: string;
-  isNew?: boolean;
+  review_count: number;
+  category_name: string;
+  is_new?: boolean;
 }
 
 const ProductCard = ({
   id,
   name,
   price,
-  originalPrice,
-  image,
+  original_price,
+  image_url,
   rating,
-  reviews,
-  category,
-  isNew
+  review_count,
+  category_name,
+  is_new
 }: ProductCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { addItem } = useCart();
   const { toast } = useToast();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking the button
-    addItem({ id, name, price, image, category });
-    toast({
-      title: "Added to Cart",
-      description: `${name} has been added to your cart`,
-    });
+    await addItem(id);
   };
 
   return (
@@ -53,7 +49,7 @@ const ProductCard = ({
         {/* Image Container */}
         <div className="relative overflow-hidden bg-gradient-card">
           <img
-            src={image}
+            src={image_url}
             alt={name}
             className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
           />
@@ -88,14 +84,14 @@ const ProductCard = ({
 
           {/* Badges */}
           <div className="absolute top-4 left-4 space-y-2">
-            {isNew && (
+            {is_new && (
               <Badge className="bg-accent text-accent-foreground font-semibold">
                 New
               </Badge>
             )}
-            {originalPrice && (
+            {original_price && (
               <Badge variant="destructive" className="font-semibold">
-                {Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF
+                {Math.round(((original_price - price) / original_price) * 100)}% OFF
               </Badge>
             )}
           </div>
@@ -105,7 +101,7 @@ const ProductCard = ({
         <div className="p-6 space-y-4">
           <div className="space-y-2">
             <div className="text-sm text-muted-foreground font-medium uppercase tracking-wide">
-              {category}
+              {category_name}
             </div>
             <h3 className="font-bold text-lg text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
               {name}
@@ -127,7 +123,7 @@ const ProductCard = ({
               ))}
             </div>
             <span className="text-sm text-muted-foreground">
-              {rating} ({reviews})
+              {rating} ({review_count})
             </span>
           </div>
 
@@ -136,9 +132,9 @@ const ProductCard = ({
             <span className="text-2xl font-bold text-foreground">
               ${price}
             </span>
-            {originalPrice && (
+            {original_price && (
               <span className="text-lg text-muted-foreground line-through">
-                ${originalPrice}
+                ${original_price}
               </span>
             )}
           </div>
