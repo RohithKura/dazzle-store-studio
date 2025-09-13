@@ -126,6 +126,7 @@ const ProductSearch = () => {
                 <div className="py-4 space-y-6">
                   {/* Mobile filter content - same as desktop */}
                   <MobileFilters 
+                    categories={categories}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
                     priceRange={priceRange}
@@ -266,6 +267,7 @@ const ProductSearch = () => {
 
 // Mobile Filters Component
 const MobileFilters = ({ 
+  categories,
   selectedCategory, 
   setSelectedCategory, 
   priceRange, 
