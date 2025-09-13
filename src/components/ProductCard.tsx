@@ -40,9 +40,9 @@ const ProductCard = ({
   };
 
   return (
-    <Link to={`/product/${id}`} className="block">
+    <Link to={`/product/${id}`} className="block group">
       <div 
-        className="group relative bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-hover transition-all duration-300 transform hover:-translate-y-2 animate-scale-in"
+        className="relative bg-card/80 backdrop-blur-sm rounded-3xl overflow-hidden shadow-card hover:shadow-float transition-all duration-500 transform hover:-translate-y-3 animate-scale-in"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -51,46 +51,49 @@ const ProductCard = ({
           <img
             src={image_url}
             alt={name}
-            className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-72 object-cover transition-transform duration-700 group-hover:scale-110"
           />
           
-          {/* Overlay Actions */}
-          <div className={`absolute inset-0 bg-primary/20 backdrop-blur-sm transition-opacity duration-300 ${
+          {/* Zen-like Overlay */}
+          <div className={`absolute inset-0 bg-primary/10 backdrop-blur-sm transition-all duration-500 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`}>
-            <div className="absolute top-4 right-4 space-y-2">
+            <div className="absolute top-4 right-4">
               <Button
                 variant="ghost"
                 size="icon"
-                className={`bg-background/80 hover:bg-background ${
-                  isFavorite ? 'text-red-500' : 'text-muted-foreground'
+                className={`bg-background/90 backdrop-blur-sm hover:bg-background rounded-full transition-all duration-300 ${
+                  isFavorite ? 'text-red-500' : 'text-muted-foreground hover:text-accent'
                 }`}
-                onClick={() => setIsFavorite(!isFavorite)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsFavorite(!isFavorite);
+                }}
               >
-                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
               </Button>
             </div>
             
             <div className="absolute bottom-4 left-4 right-4">
               <Button 
                 onClick={handleAddToCart}
-                className="w-full bg-accent hover:bg-accent-hover text-accent-foreground font-semibold"
+                className="w-full bg-accent hover:bg-accent-hover text-accent-foreground font-semibold rounded-2xl h-12 shadow-accent transition-all duration-300 hover:scale-105"
               >
-                <ShoppingCart className="w-4 h-4 mr-2" />
+                <ShoppingCart className="w-5 h-5 mr-2" />
                 Add to Cart
               </Button>
             </div>
           </div>
 
-          {/* Badges */}
+          {/* Premium Badges */}
           <div className="absolute top-4 left-4 space-y-2">
             {is_new && (
-              <Badge className="bg-accent text-accent-foreground font-semibold">
-                New
+              <Badge className="bg-accent text-accent-foreground font-semibold rounded-full px-3 py-1 shadow-accent">
+                ✨ New
               </Badge>
             )}
             {original_price && (
-              <Badge variant="destructive" className="font-semibold">
+              <Badge variant="destructive" className="font-semibold rounded-full px-3 py-1">
                 {Math.round(((original_price - price) / original_price) * 100)}% OFF
               </Badge>
             )}
@@ -100,10 +103,10 @@ const ProductCard = ({
         {/* Content */}
         <div className="p-6 space-y-4">
           <div className="space-y-2">
-            <div className="text-sm text-muted-foreground font-medium uppercase tracking-wide">
+            <div className="text-xs text-accent font-medium uppercase tracking-wider">
               {category_name}
             </div>
-            <h3 className="font-bold text-lg text-card-foreground group-hover:text-accent transition-colors line-clamp-2">
+            <h3 className="font-bold text-xl text-card-foreground group-hover:text-accent transition-colors line-clamp-2 leading-tight">
               {name}
             </h3>
           </div>
@@ -117,19 +120,19 @@ const ProductCard = ({
                   className={`w-4 h-4 ${
                     i < Math.floor(rating)
                       ? 'text-accent fill-current'
-                      : 'text-muted-foreground'
+                      : 'text-muted-foreground/30'
                   }`}
                 />
               ))}
             </div>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground font-medium">
               {rating} ({review_count})
             </span>
           </div>
 
           {/* Price */}
-          <div className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-foreground">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl font-bold text-accent">
               ${price}
             </span>
             {original_price && (
