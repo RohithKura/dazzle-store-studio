@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const db = require('../config/database');
+import db from '../config/database.js';
 
 // Create new order
 router.post('/create', async (req, res) => {
@@ -164,4 +164,4 @@ router.put('/:id/status', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

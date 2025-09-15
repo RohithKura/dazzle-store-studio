@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const db = require('../config/database');
+import db from '../config/database.js';
 
 // Get all products with filtering and sorting
 router.get('/', async (req, res) => {
@@ -184,4 +184,4 @@ router.get('/featured/list', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,24 +1,34 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
+import errorHandler from './middleware/error.js';
+import productsRouter from './routes/products.js';
+import categoriesRouter from './routes/categories.js';
+import cartRouter from './routes/cart.js';
+import ordersRouter from './routes/orders.js';
+import authRouter from './routes/auth.js';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite dev server
+  origin: ['http://localhost:5173', 'http://dazzle-store.local'], // Allow both dev server and Apache
   credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
 app.use('/uploads', express.static('uploads'));
 
 // Routes
-app.use('/api/products', require('./routes/products'));
-app.use('/api/categories', require('./routes/categories'));
-app.use('/api/cart', require('./routes/cart'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/products', productsRouter);
+app.use('/api/categories', categoriesRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/auth', authRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -26,10 +36,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {

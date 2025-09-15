@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import db from '../config/database.js';
 
 // Register new user
 router.post('/register', async (req, res) => {
@@ -128,4 +128,4 @@ router.get('/profile/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { cartAPI } from '@/services/api';
+import { cartAPI } from '../services/api';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from './AuthProvider';
 
 export interface CartItem {
   id: string;
@@ -42,16 +43,44 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user, token } = useAuth();
 
-  // Load cart items on mount
+  // Load cart items on mount and when user/token changes
   useEffect(() => {
+    const refreshCart = async () => {
+      try {
+        setLoading(true);
+        let cartItems;
+        if (user && token) {
+          cartItems = await cartAPI.getItems({ userId: user.id, token });
+        } else {
+          cartItems = await cartAPI.getItems();
+        }
+        setItems(cartItems);
+      } catch (error) {
+        console.error('Error loading cart:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load cart items"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
     refreshCart();
-  }, []);
+    // eslint-disable-next-line
+  }, [user, token]);
 
   const refreshCart = async () => {
     try {
       setLoading(true);
-      const cartItems = await cartAPI.getItems();
+      let cartItems;
+      if (user && token) {
+        cartItems = await cartAPI.getItems({ userId: user.id, token });
+      } else {
+        cartItems = await cartAPI.getItems();
+      }
       setItems(cartItems);
     } catch (error) {
       console.error('Error loading cart:', error);
@@ -68,7 +97,11 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   const addItem = async (productId: string, productData?: any) => {
     try {
       setLoading(true);
-      await cartAPI.addItem(productId, 1);
+      if (user && token) {
+        await cartAPI.addItem(productId, 1, { userId: user.id, token });
+      } else {
+        await cartAPI.addItem(productId, 1);
+      }
       await refreshCart();
       toast({
         title: "Added to Cart",

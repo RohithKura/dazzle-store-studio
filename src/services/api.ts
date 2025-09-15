@@ -59,67 +59,80 @@ export const categoriesAPI = {
 
 // Cart API
 export const cartAPI = {
-  getItems: async (userId?: string) => {
+  getItems: async (opts?: { userId?: string, token?: string }) => {
     const params = new URLSearchParams();
-    if (userId) {
-      params.append('user_id', userId);
+    let headers: Record<string, string> = {};
+    if (opts?.userId) {
+      params.append('user_id', opts.userId);
+      if (opts.token) headers['Authorization'] = `Bearer ${opts.token}`;
     } else {
       params.append('session_id', getSessionId());
     }
-    
-    const response = await fetch(`${API_BASE_URL}/cart?${params}`);
+    const response = await fetch(`${API_BASE_URL}/cart?${params}`, { headers });
     return handleResponse(response);
   },
 
-  addItem: async (productId: string, quantity: number = 1, userId?: string) => {
+  addItem: async (productId: string, quantity: number = 1, opts?: { userId?: string, token?: string }) => {
+    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (opts?.token) headers['Authorization'] = `Bearer ${opts.token}`;
+    const body = {
+      product_id: productId,
+      quantity,
+      user_id: opts?.userId,
+      session_id: opts?.userId ? undefined : getSessionId()
+    };
     const response = await fetch(`${API_BASE_URL}/cart/add`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        product_id: productId,
-        quantity,
-        user_id: userId,
-        session_id: userId ? undefined : getSessionId()
-      })
+      headers,
+      body: JSON.stringify(body)
     });
     return handleResponse(response);
   },
 
-  updateQuantity: async (productId: string, quantity: number, userId?: string) => {
+  updateQuantity: async (productId: string, quantity: number, opts?: { userId?: string, token?: string }) => {
+    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (opts?.token) headers['Authorization'] = `Bearer ${opts.token}`;
+    const body = {
+      product_id: productId,
+      quantity,
+      user_id: opts?.userId,
+      session_id: opts?.userId ? undefined : getSessionId()
+    };
     const response = await fetch(`${API_BASE_URL}/cart/update`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        product_id: productId,
-        quantity,
-        user_id: userId,
-        session_id: userId ? undefined : getSessionId()
-      })
+      headers,
+      body: JSON.stringify(body)
     });
     return handleResponse(response);
   },
 
-  removeItem: async (productId: string, userId?: string) => {
+  removeItem: async (productId: string, opts?: { userId?: string, token?: string }) => {
+    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (opts?.token) headers['Authorization'] = `Bearer ${opts.token}`;
+    const body = {
+      product_id: productId,
+      user_id: opts?.userId,
+      session_id: opts?.userId ? undefined : getSessionId()
+    };
     const response = await fetch(`${API_BASE_URL}/cart/remove`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        product_id: productId,
-        user_id: userId,
-        session_id: userId ? undefined : getSessionId()
-      })
+      headers,
+      body: JSON.stringify(body)
     });
     return handleResponse(response);
   },
 
-  clearCart: async (userId?: string) => {
+  clearCart: async (opts?: { userId?: string, token?: string }) => {
+    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (opts?.token) headers['Authorization'] = `Bearer ${opts.token}`;
+    const body = {
+      user_id: opts?.userId,
+      session_id: opts?.userId ? undefined : getSessionId()
+    };
     const response = await fetch(`${API_BASE_URL}/cart/clear`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        session_id: userId ? undefined : getSessionId()
-      })
+      headers,
+      body: JSON.stringify(body)
     });
     return handleResponse(response);
   }
