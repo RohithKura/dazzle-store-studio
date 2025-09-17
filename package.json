@@ -79,5 +79,18 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19"
-  }
+  },
+  "description": "## Project info",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RohithKura/dazzle-store-studio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RohithKura/dazzle-store-studio/issues"
+  },
+  "homepage": "https://github.com/RohithKura/dazzle-store-studio#readme"
 }
