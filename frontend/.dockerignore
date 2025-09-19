@@ -1,0 +1,8 @@
+node_modules
+README.md
+.gitignore
+Dockerfile
+docker-compose.yml
+deploy-to-apache.sh
+apache2.conf
+dist
